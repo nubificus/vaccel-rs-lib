@@ -56,6 +56,9 @@ impl Agent {
         child.wait().await?;
         Ok(())
     }
+    pub async fn stop(&self) -> Result<()> {
+        todo!();
+    }
 }
 pub async fn construct_vsock(source: String, port: String) -> Result<String> {
     let path = [&source, ":", &port].concat();
