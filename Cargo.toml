@@ -1,5 +1,5 @@
 [package]
-name = "lib-vaccel"
+name = "vaccel-rs-lib"
 version = "0.1.0"
 edition = "2021"
 
