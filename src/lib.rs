@@ -41,6 +41,7 @@ impl Agent {
         }
     }
     pub async fn start(&mut self) -> Result<()> {
+        println!("START START");
         let mut cmd = Command::new(&self.agent_path);
         //println!("Endpoint: {}",&endpoint);
         cmd.args(["-a", &self.endpoint]);
@@ -64,6 +65,7 @@ impl Agent {
         };
         self.state = State::ON { pid };
         child.wait().await?;
+        println!("START STOP");
         Ok(())
     }
     pub async fn stop(&self) -> Result<()> {
