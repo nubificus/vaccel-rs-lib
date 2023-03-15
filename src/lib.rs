@@ -7,13 +7,13 @@ pub const VSOCK_PREFIX: &str = "vsock://";
 pub const UNIX_PREFIX: &str = "unix://";
 pub const TCP_PREFIX: &str = "tcp://";
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum State {
     OFF,
     ON { pid: u32 },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Agent {
     agent_path: String,
     endpoint: String,
