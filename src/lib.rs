@@ -67,6 +67,7 @@ impl Agent {
         Ok(())
     }
     pub async fn stop(&self) -> Result<()> {
+        println!("STOP START");
         match self.state {
             State::OFF => println!("Process hasnt started yet"),
             State::ON { pid } => {
@@ -78,6 +79,7 @@ impl Agent {
                 }
             }
         }
+        println!("STOP END");
         Ok(())
     }
 }
