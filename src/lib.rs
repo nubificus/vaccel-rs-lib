@@ -66,7 +66,7 @@ impl Agent {
             }
         };
         self.state = State::ON { pid };
-        child.wait().await?;
+        //child.wait();
         println!("START STOP");
         Ok(())
     }
