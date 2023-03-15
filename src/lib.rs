@@ -52,7 +52,9 @@ impl Agent {
         }
         path.pop();
         cmd.env("VACCEL_BACKENDS", path);
+        println!("BEFORE SPAWN");
         let mut child = cmd.spawn()?;
+        println!("AFTER SPAWN");
         let pid = match child.id() {
             Some(id) => {
                 println!("VACCEL SPAWNED with id: {}", id);
