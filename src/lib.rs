@@ -41,7 +41,6 @@ impl Agent {
         }
     }
     pub async fn start(&mut self) -> Result<()> {
-        println!("START START");
         let mut cmd = Command::new(&self.agent_path);
         //println!("Endpoint: {}",&endpoint);
         cmd.args(["-a", &self.endpoint]);
@@ -52,9 +51,7 @@ impl Agent {
         }
         path.pop();
         cmd.env("VACCEL_BACKENDS", path);
-        println!("BEFORE SPAWN");
         let mut child = cmd.spawn()?;
-        println!("AFTER SPAWN");
         let pid = match child.id() {
             Some(id) => {
                 println!("VACCEL SPAWNED with id: {}", id);
@@ -67,11 +64,9 @@ impl Agent {
         };
         self.state = State::ON { pid };
         //child.wait();
-        println!("START STOP");
         Ok(())
     }
     pub async fn stop(&self) -> Result<()> {
-        println!("STOP START");
         match self.state {
             State::OFF => println!("Process hasnt started yet"),
             State::ON { pid } => {
@@ -83,7 +78,6 @@ impl Agent {
                 }
             }
         }
-        println!("STOP END");
         Ok(())
     }
 }
