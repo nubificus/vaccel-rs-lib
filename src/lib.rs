@@ -8,12 +8,19 @@ pub const UNIX_PREFIX: &str = "unix://";
 pub const TCP_PREFIX: &str = "tcp://";
 
 #[derive(Debug)]
+pub enum State {
+    OFF,
+    ON { pid: u32 },
+}
+
+#[derive(Debug)]
 pub struct Agent {
     agent_path: String,
     endpoint: String,
     debug: String,
     backends: String,
     backends_library: String,
+    state: State,
 }
 
 impl Agent {
@@ -30,9 +37,10 @@ impl Agent {
             debug,
             backends,
             backends_library,
+            state: State::OFF,
         }
     }
-    pub async fn start(&self) -> Result<()> {
+    pub async fn start(&mut self) -> Result<()> {
         let mut cmd = Command::new(&self.agent_path);
         //println!("Endpoint: {}",&endpoint);
         cmd.args(["-a", &self.endpoint]);
@@ -44,20 +52,33 @@ impl Agent {
         path.pop();
         cmd.env("VACCEL_BACKENDS", path);
         let mut child = cmd.spawn()?;
-        match child.id() {
+        let pid = match child.id() {
             Some(id) => {
                 println!("VACCEL SPAWNED with id: {}", id);
+                id
             }
             None => {
                 let exit_status = child.wait().await?;
                 bail!("VACCEL BAD SPAWN with exit status: {:?}", exit_status);
             }
         };
+        self.state = State::ON { pid };
         child.wait().await?;
         Ok(())
     }
     pub async fn stop(&self) -> Result<()> {
-        todo!();
+        match self.state {
+            State::OFF => println!("Process hasnt started yet"),
+            State::ON { pid } => {
+                let pid = ::nix::unistd::Pid::from_raw(pid as i32);
+                if let Err(err) = ::nix::sys::signal::kill(pid, nix::sys::signal::SIGKILL) {
+                    if err != ::nix::Error::ESRCH {
+                        bail!("failed to kill virtiofsd pid {} {:?}", pid, err);
+                    }
+                }
+            }
+        }
+        Ok(())
     }
 }
 pub async fn construct_vsock(source: String, port: String) -> Result<String> {
