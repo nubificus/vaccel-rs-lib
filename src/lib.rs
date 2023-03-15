@@ -63,7 +63,7 @@ impl Agent {
             }
         };
         self.state = State::ON { pid };
-        //child.wait();
+        child.wait();
         Ok(())
     }
     pub async fn stop(&self) -> Result<()> {
