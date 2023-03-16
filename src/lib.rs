@@ -15,6 +15,7 @@ pub enum State {
     ON { pid: u32 },
 }
 
+#[derive(Debug, Clone)]
 pub struct WAgent {
     inner: Arc<Mutex<Agent>>,
 }
