@@ -40,7 +40,34 @@ impl Agent {
             state: State::OFF,
         }
     }
+    pub async fn create_empty() -> Agent {
+        Agent {
+            agent_path: "".to_string(),
+            endpoint: "".to_string(),
+            debug: "".to_string(),
+            backends: "".to_string(),
+            backends_library: "".to_string(),
+            state: State::OFF,
+        }
+    }
+
+    pub async fn patch(
+        &mut self,
+        agent_path: String,
+        endpoint: String,
+        debug: String,
+        backends: String,
+        backends_library: String,
+    ) -> Result<()> {
+        self.agent_path = agent_path;
+        self.endpoint = endpoint;
+        self.debug = debug;
+        self.backends = backends;
+        self.backends_library = backends_library;
+        Ok(())
+    }
     pub async fn start(&mut self) -> Result<()> {
+        //FIXME No check for empty struct
         let mut cmd = Command::new(&self.agent_path);
         //println!("Endpoint: {}",&endpoint);
         cmd.args(["-a", &self.endpoint]);
@@ -63,7 +90,8 @@ impl Agent {
             }
         };
         self.state = State::ON { pid };
-        child.wait();
+        //FIXME check this afterwards
+        //child.wait();
         Ok(())
     }
     pub async fn stop(&self) -> Result<()> {
@@ -111,10 +139,10 @@ pub async fn construct_unix(source: String, port: String) -> Result<String> {
 }
 pub async fn construct_tcp(arg_source: String, port: String) -> Result<String> {
     let mut source = arg_source;
-    let mut dns: Vec<std::net::IpAddr> = vec![];
+    //let mut dns: Vec<std::net::IpAddr> = vec![];
     //FIXME: better check
     if !source.contains('.') {
-        dns = lookup_host(&source).unwrap();
+        let dns = lookup_host(&source).unwrap();
         source = dns[0].to_string();
     }
     let path = [&source, ":", &port].concat();
