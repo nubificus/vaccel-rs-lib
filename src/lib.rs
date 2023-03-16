@@ -1,7 +1,9 @@
 use anyhow::{bail, Result};
 use dns_lookup::lookup_host;
 use std::fmt::Write;
-use tokio::{fs, process::Command};
+use tokio::{fs, process::Command, sync::Mutex};
+
+use std::sync::Arc;
 
 pub const VSOCK_PREFIX: &str = "vsock://";
 pub const UNIX_PREFIX: &str = "unix://";
@@ -11,6 +13,45 @@ pub const TCP_PREFIX: &str = "tcp://";
 pub enum State {
     OFF,
     ON { pid: u32 },
+}
+
+pub struct WAgent {
+    inner: Arc<Mutex<Agent>>,
+}
+
+impl Default for WAgent {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl WAgent {
+    pub fn new() -> Self {
+        Self {
+            inner: Arc::new(Mutex::new(Agent::create_empty())),
+        }
+    }
+    pub async fn patch(
+        &mut self,
+        agent_path: String,
+        endpoint: String,
+        debug: String,
+        backends: String,
+        backends_library: String,
+    ) -> Result<()> {
+        let mut inner = self.inner.lock().await;
+        inner
+            .patch(agent_path, endpoint, debug, backends, backends_library)
+            .await
+    }
+    pub async fn start(&mut self) -> Result<()> {
+        let mut inner = self.inner.lock().await;
+        inner.start().await
+    }
+    pub async fn stop(&mut self) -> Result<()> {
+        let inner = self.inner.lock().await;
+        inner.stop().await
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -40,7 +81,7 @@ impl Agent {
             state: State::OFF,
         }
     }
-    pub async fn create_empty() -> Agent {
+    pub fn create_empty() -> Agent {
         Agent {
             agent_path: "".to_string(),
             endpoint: "".to_string(),
