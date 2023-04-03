@@ -9,12 +9,14 @@ pub const VSOCK_PREFIX: &str = "vsock://";
 pub const UNIX_PREFIX: &str = "unix://";
 pub const TCP_PREFIX: &str = "tcp://";
 
+// Save the pid on the ON state to be able to kill the process afterwards
 #[derive(Debug, Clone)]
 pub enum State {
     OFF,
     ON { pid: u32 },
 }
 
+// Wrapper needed for kata
 #[derive(Debug, Clone)]
 pub struct WAgent {
     inner: Arc<Mutex<Agent>>,
@@ -27,11 +29,13 @@ impl Default for WAgent {
 }
 
 impl WAgent {
+    // Empty constructor for sandbox creation
     pub fn new() -> Self {
         Self {
             inner: Arc::new(Mutex::new(Agent::create_empty())),
         }
     }
+    // After we get the hypervisor config patch the correct values
     pub async fn patch(
         &mut self,
         agent_path: String,
@@ -109,14 +113,15 @@ impl Agent {
         Ok(())
     }
     pub async fn start(&mut self) -> Result<()> {
-        //FIXME No check for empty struct
+        // No check for empty struct but it shouldnt be a problem
+        // Create a tokio process and use our parameters for arguments or to set enviromental
+        // parameters
         let mut cmd = Command::new(&self.agent_path);
-        //println!("Endpoint: {}",&endpoint);
         cmd.args(["-a", &self.endpoint]);
         cmd.env("VACCEL_DEBUG_LEVEL", &self.debug);
         let mut path = String::default();
         for b in self.backends.split(',') {
-            write!(&mut path, "{}libvaccel-{}.so:", &self.backends_library, b);
+            let _ = write!(&mut path, "{}libvaccel-{}.so:", &self.backends_library, b);
         }
         path.pop();
         cmd.env("VACCEL_BACKENDS", path);
@@ -132,8 +137,7 @@ impl Agent {
             }
         };
         self.state = State::ON { pid };
-        //FIXME check this afterwards
-        //child.wait();
+        //FIXME We need to figure out if there is a way for correct zombie reap in case of panic
         Ok(())
     }
     pub async fn stop(&self) -> Result<()> {
@@ -165,6 +169,7 @@ pub async fn construct_vsock(source: String, port: String) -> Result<String> {
     }
     Ok(full_path)
 }
+
 pub async fn construct_unix(source: String, port: String) -> Result<String> {
     let path = [&source, "_", &port].concat();
     let full_path = [UNIX_PREFIX, &path].concat();
@@ -179,6 +184,8 @@ pub async fn construct_unix(source: String, port: String) -> Result<String> {
     }
     Ok(full_path)
 }
+
+//also supports dns lookup but needs a better check for it
 pub async fn construct_tcp(arg_source: String, port: String) -> Result<String> {
     let mut source = arg_source;
     //let mut dns: Vec<std::net::IpAddr> = vec![];
