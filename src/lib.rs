@@ -219,7 +219,7 @@ pub async fn start_integrated(endpoint: String) -> Result<()>{
             Ok(())
         }
     };
-    signal::ctrl_c().await.expect("failed to listen for event");
+    //signal::ctrl_c().await.expect("failed to listen for event");
 
     Ok(())
 }
