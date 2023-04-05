@@ -1,7 +1,7 @@
-use anyhow::{bail, Result};
+use anyhow::{bail, Result, Context};
 use dns_lookup::lookup_host;
 use std::fmt::Write;
-use tokio::{fs, process::Command, sync::Mutex};
+use tokio::{fs, process::Command, sync::Mutex, signal};
 
 use std::sync::Arc;
 
@@ -206,4 +206,20 @@ pub async fn construct_tcp(arg_source: String, port: String) -> Result<String> {
         Err(e) => bail!("failed to remove tcp socket with error: {:?}", e),
     }
     Ok(full_path)
+}
+
+pub async fn start_integrated(endpoint: String) -> Result<()>{
+    let _ = match vlib::new(&endpoint){
+        Ok(mut server) => {
+            println!("Server is running, press Ctrl + C to exit");
+            server.start().context("failed to start vagent")
+        },
+        Err(e) =>{
+            println!("Server failed with error: {}",e);
+            Ok(())
+        }
+    };
+    signal::ctrl_c().await.expect("failed to listen for event");
+
+    Ok(())
 }
