@@ -211,11 +211,11 @@ pub async fn construct_tcp(arg_source: String, port: String) -> Result<String> {
 pub async fn start_integrated(endpoint: String) -> Result<()>{
     let _ = match vlib::new(&endpoint){
         Ok(mut server) => {
-            println!("Server is running, press Ctrl + C to exit");
+        //    println!("Server is running, press Ctrl + C to exit");
             server.start().context("failed to start vagent")
         },
         Err(e) =>{
-            println!("Server failed with error: {}",e);
+        //    println!("Server failed with error: {}",e);
             Ok(())
         }
     };
