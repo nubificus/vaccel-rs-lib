@@ -1,0 +1,67 @@
+name: Building kata containers binar
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: [self-hosted, "${{ matrix.archconfig }}", rust ]
+
+    strategy:
+      matrix:
+        archconfig: [x86_64, aarch64]
+        build_type: [Release]
+      fail-fast: false
+
+    steps:
+    - name: Cleanup previous runs
+      run: |
+        sudo rm -rf ${{ github.workspace }}/*
+        sudo rm -rf ${{ github.workspace }}/.??*
+        
+    - name: Find SHA
+      run: |
+        if [[ "${{github.event.pull_request.head.sha}}" != "" ]]
+        then
+          echo "ARTIFACT_SHA=$(echo ${{github.event.pull_request.head.sha}})" >> $GITHUB_ENV
+        else
+          #echo "ARTIFACT_SHA=$(echo ${{github.sha}})" >> $GITHUB_ENV
+          echo "ARTIFACT_SHA=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
+        fi
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Build Kata
+      run: |
+        mkdir -p build_${{matrix.build_type}} && \
+        export TARGET=build_${{matrix.build_type}} && \
+        cd build_${{matrix.build_type}} && \
+        export CARGO_NET_GIT_FETCH_WITH_CLI=true && \
+        git config --local url."https://${{ secrets.PAT_FOR_PRIV_REPOS }}@github.com".insteadOf ssh://git@github.com && \
+        git clone --branch rs-vaccel-fusion https://github.com/nubificus/kata-containers.git && \
+        cd kata-containers/src/runtime-rs && \
+        LIBC=gnu make && \
+        export BINARY=$(find ./ -name "containerd-shim-kata-v2")
+        
+    - name: Upload artifact to s3
+      if: ${{ env.ARTIFACT_SHA == 'main' || env.ARTIFACT_SHA == 'master' }}
+      uses: cloudkernels/minio-upload@v4
+      with:
+        url: https://s3.nubificus.co.uk
+        access-key: ${{ secrets.AWS_ACCESS_KEY }}
+        secret-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        local-path: build_${{ matrix.build_type }}/kata-containers/src/runtime-rs/target/${{ matrix.archconfig }}-unknown-linux-gnu/release/containerd-shim-kata-v2
+        remote-path: nbfc-assets/github/vaccel-rs-lib/shim/${{ env.ARTIFACT_SHA }}/${{ matrix.archconfig }}/
+        policy: 1
+
+    - name: Clean-up
+      run: |
+        sudo rm -rf artifacts build_${{ matrix.build_type }} && \
+        sudo rm -rf kata-containers

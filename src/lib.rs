@@ -1,7 +1,10 @@
-use anyhow::{bail, Result, Context};
+use anyhow::{bail, Result};
+#[cfg(feature = "vlib")]
+use anyhow::Context;
 use dns_lookup::lookup_host;
 use std::fmt::Write;
-use tokio::{fs, process::Command, sync::Mutex, signal};
+use tokio::{fs, process::Command, sync::Mutex};
+//use tokio::signal;
 
 use std::sync::Arc;
 
@@ -208,6 +211,7 @@ pub async fn construct_tcp(arg_source: String, port: String) -> Result<String> {
     Ok(full_path)
 }
 
+#[cfg(feature = "vlib")]
 pub async fn start_integrated(endpoint: String) -> Result<()>{
     let _ = match vlib::new(&endpoint){
         Ok(mut server) => {
