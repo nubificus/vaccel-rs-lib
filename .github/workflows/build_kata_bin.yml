@@ -47,7 +47,7 @@ jobs:
         git config --local url."https://${{ secrets.PAT_FOR_PRIV_REPOS }}@github.com".insteadOf ssh://git@github.com && \
         git clone --branch rs-vaccel-fusion https://github.com/nubificus/kata-containers.git && \
         cd kata-containers/src/runtime-rs && \
-        LIBC=gnu make
+        LIBC=gnu make integrated
         
     - name: Upload shim to s3
       if: ${{ env.ARTIFACT_SHA == 'main' || env.ARTIFACT_SHA == 'master' }}
