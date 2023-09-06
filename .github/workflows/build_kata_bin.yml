@@ -44,18 +44,12 @@ jobs:
         export TARGET=build_${{matrix.build_type}} && \
         cd build_${{matrix.build_type}} && \
         git clone --branch rs-vaccel-fusion https://github.com/nubificus/kata-containers.git && \
-        cd kata-containers/src/runtime-rs
-        
-
-    - name: Configure Git for HTTPS
-      run: |
+        cd kata-containers/src/runtime-rs && \
         git config --local --unset-all remote.origin.url && \
         export CARGO_NET_GIT_FETCH_WITH_CLI=true && \
-        git config --local url."https://${{ secrets.PAT_FOR_PRIV_REPOS }}@github.com".insteadOf ssh://git@github.com
-
-    - name: Make
-      run: |
-        LIBC=gnu make
+        git config --local url."https://${{ secrets.PAT_FOR_PRIV_REPOS }}@github.com".insteadOf ssh://git@github.com && \
+        printenv && \
+        LIBC=gnu make integrated
         
     - name: Upload shim to s3
       if: ${{ env.ARTIFACT_SHA == 'main' || env.ARTIFACT_SHA == 'master' }}
