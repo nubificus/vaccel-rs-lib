@@ -55,7 +55,7 @@ jobs:
 
     - name: Make
       run: |
-        LIBC=gnu make integrated
+        LIBC=gnu make
         
     - name: Upload shim to s3
       if: ${{ env.ARTIFACT_SHA == 'main' || env.ARTIFACT_SHA == 'master' }}
