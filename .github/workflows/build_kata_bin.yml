@@ -44,7 +44,7 @@ jobs:
         export TARGET=build_${{matrix.build_type}} && \
         cd build_${{matrix.build_type}} && \
         git clone --branch rs-vaccel-fusion https://github.com/nubificus/kata-containers.git && \
-        cd kata-containers/src/runtime-rs && \
+        cd kata-containers/src/runtime-rs
         
 
     - name: Configure Git for HTTPS
