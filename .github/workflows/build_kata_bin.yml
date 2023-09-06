@@ -48,7 +48,7 @@ jobs:
         git config --local --unset-all remote.origin.url && \
         export CARGO_NET_GIT_FETCH_WITH_CLI=true && \
         git config --local url."https://${{ secrets.PAT_FOR_PRIV_REPOS }}@github.com".insteadOf ssh://git@github.com && \
-        printenv && \
+        git config --list --show-origin && \
         LIBC=gnu make integrated
         
     - name: Upload shim to s3
