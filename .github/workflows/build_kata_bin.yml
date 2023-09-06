@@ -37,17 +37,23 @@ jobs:
         fi
     - name: Checkout code
       uses: actions/checkout@v2
+
+    - name: Configure Git for HTTPS
+      run: |
+        git config --local --unset-all remote.origin.url && \
+        export CARGO_NET_GIT_FETCH_WITH_CLI=true && \
+        git config --local url."https://${{ secrets.PAT_FOR_PRIV_REPOS }}@github.com".insteadOf ssh://git@github.com
+
+    - name: Debug Git Config
+      run: |
+        git config --local --get-all remote.origin.url
+        git remote -v
       
     - name: Build Kata
       run: |
         mkdir -p build_${{matrix.build_type}} && \
         export TARGET=build_${{matrix.build_type}} && \
         cd build_${{matrix.build_type}} && \
-        git config --local --unset-all remote.origin.url && \
-        export CARGO_NET_GIT_FETCH_WITH_CLI=true && \
-        git config --local url."https://${{ secrets.PAT_FOR_PRIV_REPOS }}@github.com".insteadOf ssh://git@github.com && \
-        git config --local --get-all remote.origin.url && \
-        git remote -v && \
         git clone --branch rs-vaccel-fusion https://github.com/nubificus/kata-containers.git && \
         cd kata-containers/src/runtime-rs && \
         LIBC=gnu make integrated
