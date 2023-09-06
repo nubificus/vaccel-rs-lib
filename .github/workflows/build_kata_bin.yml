@@ -44,11 +44,6 @@ jobs:
         export CARGO_NET_GIT_FETCH_WITH_CLI=true && \
         git config --local url."https://${{ secrets.PAT_FOR_PRIV_REPOS }}@github.com".insteadOf ssh://git@github.com
 
-    - name: Debug Git Config
-      run: |
-        git config --local --get-all remote.origin.url
-        git remote -v
-      
     - name: Build Kata
       run: |
         mkdir -p build_${{matrix.build_type}} && \
