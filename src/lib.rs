@@ -1,6 +1,6 @@
-use anyhow::{bail, Result};
 #[cfg(feature = "vlib")]
 use anyhow::Context;
+use anyhow::{bail, Result};
 use dns_lookup::lookup_host;
 use std::fmt::Write;
 use tokio::{fs, process::Command, sync::Mutex};
@@ -212,18 +212,10 @@ pub async fn construct_tcp(arg_source: String, port: String) -> Result<String> {
 }
 
 #[cfg(feature = "vlib")]
-pub async fn start_integrated(endpoint: String) -> Result<()>{
-    let _ = match vlib::new(&endpoint){
-        Ok(mut server) => {
-        //    println!("Server is running, press Ctrl + C to exit");
-            server.start().context("failed to start vagent")
-        },
-        Err(e) =>{
-        //    println!("Server failed with error: {}",e);
-            Ok(())
-        }
-    };
-    //signal::ctrl_c().await.expect("failed to listen for event");
+pub async fn start_integrated(endpoint: String) -> Result<()> {
+    let mut server = vaccel_rpc_agent::server_init(&endpoint)?;
+
+    server.start().context("failed to start vagent")?;
 
     Ok(())
 }
