@@ -7,11 +7,10 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1.26", features = ["fs","rt-multi-thread", "macros", "process", "sync", "signal"] }
-#anyhow = { version = "1.0.69"}
 dns-lookup = {version = "1.0.8"}
 nix = "0.26.2"
 anyhow = "^1.0"
-vaccel-rpc-agent = {git = "ssh://git@github.com/nubificus/vaccel-rust", branch="main", optional = true }
+vaccel-rpc-agent = { git = "https://github.com/nubificus/vaccel-rust", branch="main", optional = true }
 
 [features]
-vlib = ["dep:vaccel-rpc-agent"]
+integrated = ["dep:vaccel-rpc-agent"]

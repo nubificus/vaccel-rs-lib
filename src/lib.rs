@@ -1,4 +1,4 @@
-#[cfg(feature = "vlib")]
+#[cfg(feature = "integrated")]
 use anyhow::Context;
 use anyhow::{bail, Result};
 use dns_lookup::lookup_host;
@@ -211,7 +211,7 @@ pub async fn construct_tcp(arg_source: String, port: String) -> Result<String> {
     Ok(full_path)
 }
 
-#[cfg(feature = "vlib")]
+#[cfg(feature = "integrated")]
 pub async fn start_integrated(endpoint: String) -> Result<()> {
     let mut server = vaccel_rpc_agent::server_init(&endpoint)?;
 
